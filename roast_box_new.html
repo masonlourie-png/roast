@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Roast Box</title>
+<style>
+*{box-sizing:border-box}
+body{
+  margin:0;font-family:Arial,Helvetica,sans-serif;color:#151515;
+  background:radial-gradient(circle at 50% 15%,#ffd98a 0 3%,transparent 22%),linear-gradient(135deg,#ff6b6b 0%,#b04cff 48%,#ffb347 100%);
+  min-height:100vh;
+}
+.hidden{display:none!important}
+.page{max-width:1050px;margin:auto;padding:35px 18px 25px}
+header{text-align:center;margin-bottom:36px}
+header h1{font-size:62px;margin:0;font-weight:1000;letter-spacing:-3px;text-shadow:0 5px 18px rgba(80,20,80,.22)}
+header h1:first-letter{font-size:60px}
+header p{font-size:21px;margin:8px 0;color:#171717}
+.card{
+  background:rgba(255,255,255,.94);border-radius:30px;padding:32px;
+  margin:22px 0;box-shadow:0 18px 45px rgba(55,20,90,.22),0 0 0 1px rgba(255,255,255,.4) inset;
+}
+.hero{text-align:center;min-height:270px;display:flex;flex-direction:column;justify-content:center}
+.hero h2{font-size:31px;margin:0 0 16px}
+.category-label{font-weight:bold;color:#777;margin-bottom:22px}
+.buttons{display:flex;justify-content:center;gap:13px;flex-wrap:wrap}
+.btn{
+  border:0;border-radius:30px;padding:15px 27px;font-size:17px;font-weight:bold;
+  cursor:pointer;transition:.15s;background:linear-gradient(#fff,#eee);color:#151515;box-shadow:0 5px 12px rgba(0,0,0,.08)
+}
+.btn:hover{transform:translateY(-2px)}
+.primary{background:linear-gradient(135deg,#ff493d,#ff7a3d);color:white;box-shadow:0 7px 18px rgba(240,65,55,.3)}
+.like{background:linear-gradient(135deg,#ff4f87,#ff6bad);color:white;box-shadow:0 7px 18px rgba(250,80,135,.25)}
+.category.active{background:#222;color:white}
+.category:hover{background:#ddd}
+.roast-display{
+  font-size:24px;font-weight:bold;line-height:1.35;min-height:60px;
+  margin:12px auto 25px;max-width:760px
+}
+.section-title{font-size:27px;margin:0 0 18px}
+.liked-empty{color:#666;font-size:16px}
+.roast-list{display:grid;gap:12px}
+.roast-item{
+  padding:18px;border-radius:18px;background:#fff6f5;border:1px solid #f0d4d1;
+  display:flex;justify-content:space-between;gap:15px;align-items:center
+}
+.roast-item p{margin:0;line-height:1.4;font-size:17px}
+.mini-like{border:0;background:#ffedf2;border-radius:20px;padding:9px 13px;cursor:pointer}
+.form label{display:block;margin:14px 0 7px}
+select,textarea,input{
+  width:100%;padding:15px;border:2px solid #ddd;border-radius:15px;
+  font-size:16px;background:#fafafa
+}
+textarea{min-height:105px;resize:vertical}
+.add-btn{margin-top:18px}
+footer{text-align:center;color:#555;font-size:16px;padding:28px 0}
+#login{
+  min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;
+}
+.login-card{
+  width:min(455px,100%);background:#fff;border-radius:30px;padding:42px;
+  text-align:center;box-shadow:0 18px 50px rgba(50,20,40,.2)
+}
+.login-card .emoji{font-size:58px}
+.login-card h1{font-size:34px;margin:10px 0}
+.login-card p{font-size:17px;margin-bottom:28px}
+.unlock{margin-top:12px}
+.error{height:24px;color:#e33;margin-top:8px}
+@media(max-width:600px){
+  header h1{font-size:43px}.card{padding:23px}.hero h2{font-size:25px}
+  .roast-display{font-size:20px}.page{padding-top:22px}
+}
+.glow{position:fixed;width:240px;height:240px;border-radius:50%;background:rgba(255,220,100,.18);filter:blur(35px);pointer-events:none;top:8%;left:8%}
+.glow2{position:fixed;width:300px;height:300px;border-radius:50%;background:rgba(170,80,255,.16);filter:blur(45px);pointer-events:none;bottom:4%;right:4%}
+.badge{display:inline-block;margin-top:12px;padding:7px 13px;border-radius:20px;background:rgba(255,255,255,.45);font-weight:bold;font-size:13px}
+</style>
+</head>
+<body><div class="glow"></div><div class="glow2"></div>
+
+<section id="login">
+  <div class="login-card">
+    <div class="emoji">🔐</div>
+    <h1>Roast Box</h1>
+    <p>Enter the password to use Roast Box.</p>
+    <input id="password" type="password" placeholder="Password">
+    <button class="btn primary unlock" style="width:145px" onclick="unlock()">🔓 Unlock</button>
+    <div id="error" class="error"></div>
+  </div>
+</section>
+
+<main id="site" class="page hidden">
+  <header>
+    <h1>🔥 Roast Box</h1>
+    <p>Get roasted. Have a laugh. Keep it friendly!</p><div class="badge">🔥 THE HOME OF SCHOOL ROASTS 🔥</div>
+  </header>
+
+  <section class="card hero">
+    <h2 id="roastPrompt">Click the button to get roasted! 🔥</h2>
+    <div id="categoryName" class="category-label">Random</div>
+    <div id="currentRoast" class="roast-display"></div>
+    <div class="buttons">
+      <button class="btn primary" onclick="randomRoast()">🔥 Roast Me!</button>
+      <button class="btn like" onclick="likeCurrent()">❤️ Like <span id="likeCount">0</span></button>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2 class="section-title">🎯 Pick a category</h2>
+    <div class="buttons" style="justify-content:flex-start">
+      <button class="btn category active" onclick="setCategory('Random',this)">Random</button>
+      <button class="btn category" onclick="setCategory('School',this)">🏫 School</button>
+      <button class="btn category" onclick="setCategory('Sports',this)">⚽ Sports</button>
+      <button class="btn category" onclick="setCategory('Gaming',this)">🎮 Gaming</button>
+      <button class="btn category" onclick="setCategory('Friends',this)">🕺 Friends</button>
+      <button class="btn category" onclick="setCategory('Dad',this)">👨 Dad</button>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2 class="section-title">❤️ My Liked Roasts</h2>
+    <div id="liked" class="liked-empty">You haven't liked any roasts yet. Find one you like and press ❤️!</div>
+  </section>
+
+  <section class="card form">
+    <h2 class="section-title">➕ Add your own roast</h2>
+    <label>Category</label>
+    <select id="newCategory">
+      <option>School</option><option>Sports</option><option>Gaming</option>
+      <option>Friends</option><option>Dad</option><option>Random</option>
+    </select>
+    <label>Your roast</label>
+    <textarea id="newRoast" placeholder="Keep it funny and friendly..."></textarea>
+    <button class="btn primary add-btn" onclick="addRoast()">📥 Add Roast</button>
+    <p style="color:#666;margin-top:55px">Roast Box is for jokes, not bullying. Keep it fun!</p>
+  </section>
+
+  <footer>Roast Box © 2026 — 🔥 Keep it funny!</footer>
+</main>
+
+<script>
+const PASSWORD="mason";
+const starter=[
+ {c:"School",t:"Those long pants had a longer trip planned than the teacher did. 👖😂"},
+ {c:"School",t:"The floor really said: 'Today, I'm taking attendance.'"},
+ {c:"School",t:"That wasn't a fall — it was an unexpected change of lesson plan."},
+ {c:"School",t:"Teacher vs. long pants: the pants won. 🏆👖"},
+ {c:"School",t:"Even the floor couldn't believe what just happened."},
+ {c:"School",t:"New school rule: check your trouser length before attempting walking! 😂"},
+ {c:"School",t:"The lesson started with maths and ended with gravity. 📚"},
+ {c:"School",t:"That entrance had more drama than the school production. 🎭"},
+ {c:"School",t:"The bell wasn't the only thing that went off schedule today. 🔔"},
+ {c:"School",t:"Homework was handed in, but balance was apparently optional."},
+ {c:"School",t:"The teacher brought the lesson plan. The floor brought a plot twist."},
+ {c:"School",t:"That was the fastest route from standing to sitting I've ever seen."},
+ {c:"School",t:"Gravity got a perfect score on today's lesson."},
+ {c:"School",t:"The classroom floor just earned a spot on the staff team."},
+ {c:"School",t:"Today's surprise test was called: 'Can you stay upright?'"},
+ {c:"School",t:"That was not on the timetable. 😂"},
+ {c:"School",t:"The pants were long enough to need their own timetable."},
+ {c:"School",t:"Some teachers use a whiteboard. This one used the floor."},
+ {c:"Sports",t:"That run had more plot twists than a championship final. 😂"},
+ {c:"Sports",t:"The warm-up was going great until gravity joined the team."},
+ {c:"Sports",t:"That was a world-record attempt in unexpected stopping."},
+ {c:"Sports",t:"Even the referee would've needed a replay for that one. 😂"},
+ {c:"Sports",t:"Gravity played excellent defence today."},
+ {c:"Sports",t:"The floor absolutely won that tackle."},
+ {c:"Sports",t:"That move wasn't in the training manual."},
+ {c:"Sports",t:"Olympic judges would have questions, but definitely remember it. 😂"},
+ {c:"Sports",t:"A solid performance from Team Gravity."},
+ {c:"Sports",t:"That was less 'athlete' and more 'unexpected highlight reel.'"},
+ {c:"Gaming",t:"Bro got defeated by the floor before the first boss. 🎮"},
+ {c:"Gaming",t:"Achievement unlocked: Unexpected Floor Interaction. 🏆"},
+ {c:"Gaming",t:"Gravity just landed a critical hit."},
+ {c:"Gaming",t:"New mission: survive the next five steps."},
+ {c:"Gaming",t:"The floor had a better strategy."},
+ {c:"Gaming",t:"Respawn needed. 😂"},
+ {c:"Gaming",t:"That was definitely not part of the tutorial."},
+ {c:"Gaming",t:"Boss battle: Teacher vs. Long Pants."},
+ {c:"Gaming",t:"The pants had an overpowered special move."},
+ {c:"Gaming",t:"Game over, but make it educational."},
+ {c:"Friends",t:"Your jokes have a loading screen longer than the punchline. 😂"},
+ {c:"Friends",t:"That story had more twists than a roller coaster."},
+ {c:"Friends",t:"You didn't tell a joke — you released a whole season."},
+ {c:"Friends",t:"Your timing is so dramatic it needs background music."},
+ {c:"Friends",t:"That was a premium-quality goofy moment."},
+ {c:"Friends",t:"Somehow you made that look completely planned. 😂"},
+ {c:"Friends",t:"The confidence was 100%. The landing was 0%."},
+ {c:"Friends",t:"That deserves a replay button."},
+ {c:"Friends",t:"You turned an ordinary moment into a highlight."},
+ {c:"Friends",t:"That moment is going straight into the school history books."},
+ {c:"Dad",t:"That dad joke was so old it remembers dial-up internet. 📞"},
+ {c:"Dad",t:"That joke was so cheesy it came with crackers. 🧀"},
+ {c:"Dad",t:"Dad jokes: because regular jokes need a licence."},
+ {c:"Dad",t:"That pun was so bad it became good again."},
+ {c:"Dad",t:"The punchline arrived five minutes after everyone else."},
+ {c:"Dad",t:"That joke deserves a slow clap... very slow."},
+ {c:"Dad",t:"Classic dad energy: maximum confidence, questionable results. 😂"},
+ {c:"Dad",t:"That joke just aged another ten years."},
+ {c:"Dad",t:"Even the dictionary needed a break after that one."},
+ {c:"Dad",t:"The joke was free, but somehow we all paid for it. 😂"},
+ {c:"School",t:"The corridor wasn't slippery — your pants just had their own agenda. 👖"},
+ {c:"School",t:"You didn't trip. Your trousers simply scheduled a surprise meeting with the floor."},
+ {c:"School",t:"That was less of a stumble and more of a very short field trip."},
+ {c:"School",t:"The floor has officially been promoted to your biggest classroom rival."},
+ {c:"School",t:"Those pants were doing more movement than the whole PE class."},
+ {c:"School",t:"You walked in like a teacher and left the moment like a blooper reel."},
+ {c:"School",t:"The floor said 'pop quiz' and gravity said 'you're up.'"},
+ {c:"School",t:"If long pants were a subject, you just got a practical assessment."},
+ {c:"School",t:"That was the most unexpected lesson of the day — and nobody took notes."},
+ {c:"School",t:"Your trousers didn't fit the lesson plan, but they definitely fit the floor."},
+ {c:"School",t:"The bell rang for class, but gravity rang for round two."},
+ {c:"School",t:"One small step for teacher, one giant stumble for long pants."},
+
+ {c:"Sports",t:"That wasn't a tackle — the ground just wanted an autograph."},
+ {c:"Sports",t:"You invented a new sport: competitive unexpected sitting."},
+ {c:"Sports",t:"The only thing faster than that fall was everyone noticing it."},
+ {c:"Sports",t:"Your long pants just tried out for the hurdles without telling you."},
+ {c:"Sports",t:"That move had zero warm-up and maximum commitment."},
+ {c:"Sports",t:"The floor defended its territory perfectly."},
+ {c:"Sports",t:"That was an elite-level surprise move, just not an elite-level landing."},
+ {c:"Sports",t:"The scoreboard should have a new category: Gravity 1, Teacher 0."},
+ {c:"Sports",t:"No coach could have drawn that play on a whiteboard."},
+ {c:"Sports",t:"That was a highlight, just not the kind you planned."},
+
+ {c:"Gaming",t:"Achievement unlocked: Pants vs. Physics."},
+ {c:"Gaming",t:"The floor just speed-ran the boss fight."},
+ {c:"Gaming",t:"You found the secret level called 'Watch Your Step.'"},
+ {c:"Gaming",t:"Gravity had a surprise DLC installed."},
+ {c:"Gaming",t:"That was a lag spike in real life."},
+ {c:"Gaming",t:"Your character forgot to equip the balance upgrade."},
+ {c:"Gaming",t:"New game mode unlocked: Long Pants Survival."},
+ {c:"Gaming",t:"The floor got the first hit and never looked back."},
+ {c:"Gaming",t:"That cutscene definitely wasn't skippable."},
+ {c:"Gaming",t:"You didn't lose the game — you just lost the battle with physics."},
+
+ {c:"Friends",t:"That moment had enough comedy to need its own trailer."},
+ {c:"Friends",t:"Nobody ordered a blooper, but you delivered one anyway."},
+ {c:"Friends",t:"You turned three seconds into a full comedy special."},
+ {c:"Friends",t:"That was so unexpected even the floor looked surprised."},
+ {c:"Friends",t:"You really said 'watch this' without saying anything."},
+ {c:"Friends",t:"The confidence walked in first. The balance arrived late."},
+ {c:"Friends",t:"That moment belongs in the group chat hall of fame."},
+ {c:"Friends",t:"You gave the floor a five-star review with absolutely no warning."},
+ {c:"Friends",t:"That was the kind of moment people remember during roll call."},
+ {c:"Friends",t:"Some moments need an explanation. That one needs a replay."},
+
+ {c:"Dad",t:"Those pants weren't long — they were preparing for next Tuesday."},
+ {c:"Dad",t:"That was a dad-level entrance with a dad-level plot twist."},
+ {c:"Dad",t:"The floor didn't laugh, but everyone else definitely did."},
+ {c:"Dad",t:"You brought the dad energy and forgot to bring the balance."},
+ {c:"Dad",t:"Those trousers have more plans than the family calendar."},
+ {c:"Dad",t:"That fall was so dad-coded it practically came with a barbecue."},
+ {c:"Dad",t:"Your pants are officially longer than some of your stories."},
+ {c:"Dad",t:"That joke was almost as unexpected as the trip."},
+ {c:"Dad",t:"You don't need a punchline when your trousers provide the plot."},
+ {c:"Dad",t:"The pants said 'I've got this.' Physics disagreed."}
+
+];
+
+let roasts=JSON.parse(localStorage.getItem("rb_roasts_v2")||"null");
+if(!Array.isArray(roasts)||!roasts.length){roasts=starter;localStorage.setItem("rb_roasts_v2",JSON.stringify(roasts));}
+let liked=JSON.parse(localStorage.getItem("rb_liked")||"[]");
+let category="Random",current=null;
+
+function save(){localStorage.setItem("rb_roasts_v2",JSON.stringify(roasts));localStorage.setItem("rb_liked",JSON.stringify(liked))}
+function unlock(){
+ if(document.getElementById("password").value===PASSWORD){
+   document.getElementById("login").classList.add("hidden");
+   document.getElementById("site").classList.remove("hidden");
+ }else document.getElementById("error").textContent="Wrong password!";
+}
+function pool(){
+ return category==="Random"?roasts:roasts.filter(r=>r.c===category);
+}
+function randomRoast(hidePrompt=true){
+ if(hidePrompt) document.getElementById("roastPrompt").style.display="none";
+ let p=pool();if(!p.length){current={t:"No roasts in this category yet! Add one below. 😄",c:category};}
+ else current=p[Math.floor(Math.random()*p.length)];
+ document.getElementById("currentRoast").textContent=current.t;
+ document.getElementById("categoryName").textContent=current.c;
+ document.getElementById("likeCount").textContent=liked.includes(current.t)?1:0;
+}
+function setCategory(c,el){
+ category=c;document.querySelectorAll(".category").forEach(x=>x.classList.remove("active"));el.classList.add("active");randomRoast()
+}
+function likeCurrent(){
+ if(!current||!current.t)return;
+ if(!liked.includes(current.t))liked.push(current.t);else liked=liked.filter(x=>x!==current.t);
+ save();document.getElementById("likeCount").textContent=liked.includes(current.t)?1:0;renderLiked()
+}
+function renderLiked(){
+ const box=document.getElementById("liked");
+ if(!liked.length){box.className="liked-empty";box.textContent="You haven't liked any roasts yet. Find one you like and press ❤️!";return}
+ box.className="roast-list";
+ box.innerHTML=liked.map((r,i)=>`<div class="roast-item"><p>${esc(r)}</p><button class="mini-like" onclick="removeLike(${i})">❤️</button></div>`).join("")
+}
+function removeLike(i){liked.splice(i,1);save();renderLiked();if(current)document.getElementById("likeCount").textContent=liked.includes(current.t)?1:0}
+function addRoast(){
+ const text=document.getElementById("newRoast").value.trim(),c=document.getElementById("newCategory").value;
+ if(!text)return;
+ roasts.unshift({c,t:text});save();document.getElementById("newRoast").value="";category=c;
+ randomRoast();
+ alert("Roast added! 🔥");
+}
+function esc(t){const d=document.createElement("div");d.textContent=t;return d.innerHTML}
+document.getElementById("password").addEventListener("keydown",e=>{if(e.key==="Enter")unlock()});
+renderLiked();
+</script>
+</body>
+</html>
